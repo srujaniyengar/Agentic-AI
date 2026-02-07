@@ -13,7 +13,6 @@ This project implements a sophisticated multi-agent Large Language Model (LLM) s
 *   **Diverse & Open-Source Model Support**: Easily integrates with multiple LLM providers, prioritizing fast, open-source models.
     *   **Groq**: Llama3 (70B & 8B), Mixtral
     *   **Ollama**: Local models like Llama3, Mistral, Qwen2
-    *   **Together AI**: Hosted models like Llama-3-70b-chat-hf
 *   **Domain-Specific Logic**: Implements enhanced fallback and validation logic tailored to specific question types, dramatically improving accuracy on benchmark tasks.
 *   **Stateful Graph Architecture**: Built with LangGraph, providing a robust and clear execution flow for complex agent interactions.
 
