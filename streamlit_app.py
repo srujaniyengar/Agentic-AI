@@ -41,7 +41,6 @@ st.markdown("""
         font-size: 2.5rem;
         font-weight: bold;
         text-align: center;
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
         color: black
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
