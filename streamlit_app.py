@@ -41,7 +41,7 @@ st.markdown("""
         font-size: 2.5rem;
         font-weight: bold;
         text-align: center;
-        color: black
+        color: black,
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         padding: 1rem 0;
