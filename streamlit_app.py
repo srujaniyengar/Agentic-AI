@@ -28,7 +28,7 @@ load_dotenv()
 
 # --- PAGE CONFIG ---
 st.set_page_config(
-    page_title="Multi-Agent AI System",
+    page_title="Multi-Agent Based LLM Council",
     page_icon="🤖",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -41,7 +41,7 @@ st.markdown("""
         font-size: 2.5rem;
         font-weight: bold;
         text-align: center;
-        color: black,
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         padding: 1rem 0;
