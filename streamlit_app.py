@@ -396,7 +396,7 @@ def init_session_state():
 
 # --- STREAMLIT UI ---
 def main():
-    st.markdown('<h1 class="main-header">🤖 Multi-Agent AI System</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 class="main-header">🤖 Multi-Agent LLM Council</h1>', unsafe_allow_html=True)
     st.markdown("### Powered by Groq LLMs with Consensus Voting & Reflection")
     
     init_session_state()
