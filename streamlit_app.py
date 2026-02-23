@@ -149,8 +149,8 @@ class MultiModelManager:
             )
             
             try:
-                self.models['llama4_maverick'] = ChatGroq(
-                    model="meta-llama/llama-4-maverick-17b-128e-instruct",
+                self.models['gpt-oss-120b'] = ChatGroq(
+                    model="openai/gpt-oss-120b",
                     temperature=0.1,
                     api_key=groq_api_key
                 )
