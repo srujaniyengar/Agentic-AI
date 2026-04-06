@@ -9,11 +9,11 @@ import random
 import operator
 from typing import List, Dict, Any, TypedDict, Annotated
 from collections import Counter
-import asyncio
-import threading
-from queue import Queue
-from dotenv import load_dotenv
-from datetime import datetime
+import asyncio  # 🔥 MIXING PARADIGMS:
+import threading  # - asyncio (coroutines)
+from queue import Queue  # - threading (threads)
+from dotenv import load_dotenv  # - Queue (inter-thread comms)
+from datetime import datetime  # This is a recipe for race conditions. Pick ONE approach.
 
 from langchain_core.tools import tool
 from langchain_community.tools.tavily_search import TavilySearchResults
@@ -77,6 +77,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- SYSTEM PROMPTS ---
+# 🔴 DUPLICATE CODE: Same prompt as main.py! Extract to prompts.py or config file.
+# When you update one, the other breaks. This is technical debt.
 CONSENSUS_SYSTEM_PROMPT = """You are part of a multi-agent expert panel. Your role is to provide the most accurate and precise answer possible based ONLY on the provided information.
 EXTRACTION RULES:
 - Parse all relevant data, names, and numbers from the search results.
@@ -96,9 +98,13 @@ Your task is to review the proposed answer based on the original question and th
 Respond with 'VALIDATED: [answer]' if it is correct, or 'CORRECTED: [better_answer]' if you can provide a more accurate or concise answer based on the context."""
 
 # --- ASYNC HELPER FOR STREAMLIT ---
+# 🔥 ARCHITECTURAL SMELL: Caching event loops with @st.cache_resource is dangerous.
+# Streamlit reruns scripts constantly. Cached event loops can cause stale state, race conditions.
+# This is a workaround for fundamental async/Streamlit incompatibility. Consider refactoring.
 @st.cache_resource
 def get_event_loop():
     """Create a dedicated event loop for async operations"""
+    # 🟡 THREADING HAZARD: Running event loop in background thread + Streamlit's async handling = potential deadlocks
     loop = asyncio.new_event_loop()
     
     def run_loop_forever(loop_to_run):
@@ -111,9 +117,13 @@ def get_event_loop():
 
 def run_async(coro):
     """Run async coroutine in Streamlit-compatible way"""
+    # 🟡 ISSUES: 
+    # 1. Blocking call to future.result() - could hang if event loop is stuck
+    # 2. No timeout specified - infinite wait if something fails
+    # 3. Exceptions in coroutine will be raised here - no graceful error handling
     loop = get_event_loop()
     future = asyncio.run_coroutine_threadsafe(coro, loop)
-    return future.result()
+    return future.result(timeout=30)  # At least add timeout
 
 # --- MODEL MANAGEMENT ---
 class MultiModelManager:
@@ -124,7 +134,9 @@ class MultiModelManager:
 
     def _initialize_models(self):
         """Initialize available Groq models - UPDATED FOR JANUARY 2025"""
-        groq_api_key = groq_api_key = st.secrets.get("GROQ_API_KEY")
+        # 🟡 TYPO: Double assignment: groq_api_key = groq_api_key =
+        # Also: Using st.secrets is good, but consider os.getenv() fallback for local dev
+        groq_api_key = st.secrets.get("GROQ_API_KEY")
         
         if not groq_api_key:
             raise RuntimeError("❌ GROQ_API_KEY not found in environment variables")

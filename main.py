@@ -10,10 +10,11 @@ import operator
 from typing import List, Dict, Any, TypedDict, Annotated
 from collections import Counter
 import asyncio
-import nest_asyncio
+import nest_asyncio  # ⚠️  TROLL: nest_asyncio is a band-aid for Jupyter/async conflicts. Why here?
 from dotenv import load_dotenv
 
 # Apply the patch
+# 🔥 HARSH TRUTH: This is usually a sign you have event loop issues. Consider refactoring instead.
 nest_asyncio.apply()
 
 from langchain_core.tools import tool
@@ -26,6 +27,8 @@ from langchain_groq import ChatGroq
 load_dotenv()
 
 # --- SYSTEM PROMPTS ---
+# 🔴 RED FLAG: These prompts are DUPLICATED in streamlit_app.py too!
+# Future you will update one and forget the other. Extract to prompts.py NOW.
 
 CONSENSUS_SYSTEM_PROMPT = """You are part of a multi-agent expert panel. Your role is to provide the most accurate and precise answer possible based ONLY on the provided information.
 EXTRACTION RULES:
@@ -94,6 +97,10 @@ class MultiModelManager:
                     api_key=groq_api_key
                 )
             except:
+                # 🔥 TERRIBLE: Bare except: pass silently swallows ALL errors!
+                # Could be: API rate limit, invalid model name, network error, auth failure
+                # You'll never know. Just silently crushed dreams.
+                # At MINIMUM: except Exception as e: logging.warning(f"Failed to load llama4_maverick: {e}")
                 pass
             
             try:
@@ -104,6 +111,7 @@ class MultiModelManager:
                     api_key=groq_api_key
                 )
             except:
+                # 🔥 SAME ISSUE: See comment above. This pattern repeats 3+ times. DRY violation.
                 pass
             
             try:
@@ -114,6 +122,7 @@ class MultiModelManager:
                     api_key=groq_api_key
                 )
             except:
+                # 🔥 THIRD TIME: Replace pattern with a helper function to avoid repetition.
                 pass
             
             if not self.models:
@@ -125,15 +134,17 @@ class MultiModelManager:
             raise RuntimeError(f"❌ Failed to initialize Groq models: {e}")
 
     def get_diverse_models(self, count: int = 3) -> List:
+        # 🟡 ISSUE: No logging if we got fewer models than requested. Silent downgrade.
         available_count = min(count, len(self.models))
         return random.sample(list(self.models.values()), available_count)
+        # 🟡 ISSUE: Randomly sampling means results aren't reproducible. Consider seeding or ordering.
 
-    def get_best_model(self) -> Any:
+    def get_best_model(self) -> Any:  # 🔴 LAZY TYPE HINT: -> Any defeats purpose of type checking. Use -> ChatGroq | None
         # Priority order based on production quality and capabilities
         for model_name in ['llama3.3_70b', 'llama4_maverick', 'qwen3_32b', 'llama4_scout', 'llama3.1_8b']:
             if model_name in self.models:
                 return self.models[model_name]
-        return list(self.models.values())[0] if self.models else None
+        return list(self.models.values())[0] if self.models else None  # 🟡 Could return None - caller might not handle it
 
 # --- SEARCH TOOL ---
 
@@ -159,9 +170,9 @@ def enhanced_multi_search(query: str) -> str:
             elif isinstance(results, str):
                 all_results.append(f"<WebResult>{results}</WebResult>")
                 
-            print(f"✓ Tavily: Found {len(all_results)} results")
+            print(f"✓ Tavily: Found {len(all_results)} results")  # 🟡 Use logging.info(), not print()
         except Exception as e:
-            print(f"⚠️  Tavily search error: {e}")
+            print(f"⚠️  Tavily search error: {e}")  # 🔥 ERROR SWALLOWED: No way to tell caller search failed. Silent fail.
     
     # Wikipedia Search
     try:
@@ -170,9 +181,9 @@ def enhanced_multi_search(query: str) -> str:
             content = doc.page_content[:1500]
             title = doc.metadata.get('title', 'Wikipedia')
             all_results.append(f"<WikiResult title='{title}'>{content}</WikiResult>")
-        print(f"✓ Wikipedia: Found {len(docs)} result(s)")
+        print(f"✓ Wikipedia: Found {len(docs)} result(s)")  # 🟡 Use logging.info()
     except Exception as e:
-        print(f"ℹ️  Wikipedia: {e}")
+        print(f"ℹ️  Wikipedia: {e}")  # 🟡 Silently degraded. Caller doesn't know search failed.
     
     if not all_results:
         return "Search did not yield any results."
@@ -222,13 +233,15 @@ class ConsensusVotingSystem:
             ])
             answer = response.content.strip()
             extracted = answer.split("FINAL ANSWER:")[-1].strip() if "FINAL ANSWER:" in answer else answer
-            print(f"  → Agent {agent_num}: Generated response ({len(extracted)} chars)")
+            print(f"  → Agent {agent_num}: Generated response ({len(extracted)} chars)")  # 🟡 Use logging
             return extracted
         except Exception as e:
-            print(f"  → Agent {agent_num}: Error - {str(e)[:100]}")
-            return f"Agent error: {e}"
+            print(f"  → Agent {agent_num}: Error - {str(e)[:100]}")  # 🔥 Broad exception handling. Errors silently returned as strings.
+            return f"Agent error: {e}"  # 🟡 Inconsistent: Sometimes returns error as string mixed with real responses
 
     def _apply_consensus_voting(self, responses: List[str], thinking_log: List[str]) -> str:
+        # 🔥 INCOMPLETE: This function handles edge cases but voting logic is simplistic (first-match).
+        # README promises "domain-specific voting logic" but implementation is generic.
         thinking_log.append("🗳️  Voting on best answer...")
         if not responses:
             return "Unable to determine consensus"

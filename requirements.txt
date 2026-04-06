@@ -1,10 +1,19 @@
-streamlit>=1.28.0
-python-dotenv>=1.0.0
-langchain>=0.1.0
-langchain-core>=0.2.0
-langchain-community>=0.0.13
-langchain-groq>=0.1.0
-langgraph>=0.0.20
+# 🔥 LOOSE VERSIONING: These >= specs mean dependencies can break unexpectedly!
+# langchain>=0.1.0 could install langchain==2.5.0 and break everything in 6 months.
+# Use pinned versions for reproducibility after testing:
+# streamlit==1.32.2
+# python-dotenv==1.0.0
+# langchain==0.1.14
+# etc.
+
+# CURRENT LOOSE VERSIONS (FIX THIS):
+streamlit>=1.28.0  # 🔴 TOO LOOSE
+python-dotenv>=1.0.0  # 🔴 TOO LOOSE  
+langchain>=0.1.0  # 🔴 DANGEROUS: Can change dramatically
+langchain-core>=0.2.0  # 🔴 DANGEROUS
+langchain-community>=0.0.13  # 🔴 DANGEROUS
+langchain-groq>=0.1.0  # 🔴 DANGEROUS
+langgraph>=0.0.20  # 🔴 This is pre-1.0 - expect breaking changes
 tavily-python>=0.3.0
 wikipedia>=1.4.0
 nest-asyncio>=1.5.8
