@@ -96,11 +96,10 @@ class MultiModelManager:
                     temperature=0.1,
                     api_key=groq_api_key
                 )
-            except:
-                # 🔥 TERRIBLE: Bare except: pass silently swallows ALL errors!
-                # Could be: API rate limit, invalid model name, network error, auth failure
-                # You'll never know. Just silently crushed dreams.
-                # At MINIMUM: except Exception as e: logging.warning(f"Failed to load llama4_maverick: {e}")
+            except:  # 🤡 BARE EXCEPT: PASS 🤡 eww WORST ANTI-PATTERN (NOOB!)
+                # Swallows EVERYTHING: API errors, typos, network, all of it lolz
+                # Result: Silent failure = impossible debugging 🤡
+                # Future you: *sobbing in production* 😭
                 pass
             
             try:
@@ -134,17 +133,17 @@ class MultiModelManager:
             raise RuntimeError(f"❌ Failed to initialize Groq models: {e}")
 
     def get_diverse_models(self, count: int = 3) -> List:
-        # 🟡 ISSUE: No logging if we got fewer models than requested. Silent downgrade.
+        # 🤡 eww No logging if count < available = NOOB silent downgrade lolz
         available_count = min(count, len(self.models))
-        return random.sample(list(self.models.values()), available_count)
-        # 🟡 ISSUE: Randomly sampling means results aren't reproducible. Consider seeding or ordering.
+        return random.sample(list(self.models.values()), available_count)  # 🤡 Random = NOT reproducible lolz
+        # 🤡 Your A/B tests: "different every run" eww 🤡
 
-    def get_best_model(self) -> Any:  # 🔴 LAZY TYPE HINT: -> Any defeats purpose of type checking. Use -> ChatGroq | None
+    def get_best_model(self) -> Any:  # 🤡 eww -> Any: "NOOB TYPE SAFETY SURRENDER" lolz
         # Priority order based on production quality and capabilities
         for model_name in ['llama3.3_70b', 'llama4_maverick', 'qwen3_32b', 'llama4_scout', 'llama3.1_8b']:
             if model_name in self.models:
                 return self.models[model_name]
-        return list(self.models.values())[0] if self.models else None  # 🟡 Could return None - caller might not handle it
+        return list(self.models.values())[0] if self.models else None  # 🤡 Can return None = AttributeError lolz eww
 
 # --- SEARCH TOOL ---
 
@@ -170,9 +169,9 @@ def enhanced_multi_search(query: str) -> str:
             elif isinstance(results, str):
                 all_results.append(f"<WebResult>{results}</WebResult>")
                 
-            print(f"✓ Tavily: Found {len(all_results)} results")  # 🟡 Use logging.info(), not print()
+            print(f"✓ Tavily: Found {len(all_results)} results")  # 🤡 eww print() = NOOB logs (lost in prod lolz)
         except Exception as e:
-            print(f"⚠️  Tavily search error: {e}")  # 🔥 ERROR SWALLOWED: No way to tell caller search failed. Silent fail.
+            print(f"⚠️  Tavily search error: {e}")  # 🤡 Caller: ?????? search failed? lolz eww
     
     # Wikipedia Search
     try:
@@ -240,11 +239,11 @@ class ConsensusVotingSystem:
             return f"Agent error: {e}"  # 🟡 Inconsistent: Sometimes returns error as string mixed with real responses
 
     def _apply_consensus_voting(self, responses: List[str], thinking_log: List[str]) -> str:
-        # 🔥 INCOMPLETE: This function handles edge cases but voting logic is simplistic (first-match).
-        # README promises "domain-specific voting logic" but implementation is generic.
+        # 🤡 eww README says "domain-specific" but NOOB it's just Counter lolz
+        # Where's that "dramatically improving accuracy"?? 🤡 NOOB MARKETING
         thinking_log.append("🗳️  Voting on best answer...")
         if not responses:
-            return "Unable to determine consensus"
+            return "Unable to determine consensus"  # eww lolz
         
         cleaned = [r.strip()[:500] for r in responses if r and len(r.strip()) > 10]
         
